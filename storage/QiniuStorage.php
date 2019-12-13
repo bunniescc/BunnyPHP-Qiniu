@@ -29,7 +29,14 @@ class QiniuStorage implements Storage
 
     public function read($filename)
     {
-        // TODO: Implement read() method.
+        $url = $this->url . $filename;
+        $params = ['http' => ['method' => 'GET', 'header' => ['User-Agent: BunnyPHP']]];
+        $ctx = stream_context_create($params);
+        $fp = @fopen($url, 'rb', false, $ctx);
+        if (!$fp) die();
+        $response = @stream_get_contents($fp);
+        if ($response === false) die();
+        return $response;
     }
 
     public function write($filename, $content)
