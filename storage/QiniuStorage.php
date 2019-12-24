@@ -2,7 +2,6 @@
 
 namespace Bunny\Storage;
 
-
 use BunnyPHP\Storage;
 use Qiniu\Auth;
 use Qiniu\Config;
@@ -33,9 +32,9 @@ class QiniuStorage implements Storage
         $params = ['http' => ['method' => 'GET', 'header' => ['User-Agent: BunnyPHP']]];
         $ctx = stream_context_create($params);
         $fp = @fopen($url, 'rb', false, $ctx);
-        if (!$fp) die();
+        if (!$fp) return false;
         $response = @stream_get_contents($fp);
-        if ($response === false) die();
+        if ($response === false) return false;
         return $response;
     }
 
@@ -44,7 +43,7 @@ class QiniuStorage implements Storage
         $token = $this->auth->uploadToken($this->bucket);
         $uploadMgr = new UploadManager();
         list($ret, $err) = $uploadMgr->put($token, $filename, $content);
-        return ($err !== null) ? null : $this->url . $filename;
+        return ($err !== null) ? false : $this->url . $filename;
     }
 
     public function upload($filename, $path)
@@ -52,7 +51,7 @@ class QiniuStorage implements Storage
         $token = $this->auth->uploadToken($this->bucket);
         $uploadMgr = new UploadManager();
         list($ret, $err) = $uploadMgr->putFile($token, $filename, $path);
-        return ($err !== null) ? null : $this->url . $filename;
+        return ($err !== null) ? false : $this->url . $filename;
     }
 
     public function remove($filename)
@@ -60,5 +59,6 @@ class QiniuStorage implements Storage
         $config = new Config();
         $bucketMgr = new BucketManager($this->auth, $config);
         $bucketMgr->delete($this->bucket, $filename);
+        return true;
     }
 }
